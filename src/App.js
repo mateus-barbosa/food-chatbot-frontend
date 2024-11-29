@@ -48,18 +48,32 @@ function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMessage }),
       });
-  
+    
       const botResponses = await response.json();
-      setIsTyping(false)
-  
-      for (const response of botResponses) {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        addMessage(response.text, "bot");
+      console.log("Resposta do Rasa:", botResponses); // Log para verificar a resposta
+      setIsTyping(false);
+    
+      if (!botResponses || botResponses.length === 0) {
+        // Se não houver resposta do Rasa
+        addMessage("Desculpe, não compreendi sua pergunta.", "bot");
+      } else {
+        let foundValidResponse = false;
+        for (const response of botResponses) {
+          if (response.text) {
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            addMessage(response.text, "bot");
+            foundValidResponse = true;
+          }
+        }
+        if (!foundValidResponse) {
+          // Caso nenhum item tenha a propriedade 'text'
+          addMessage("Desculpe, não compreendi sua pergunta.", "bot");
+        }
       }
     } catch (error) {
       console.error("Erro ao se comunicar com o servidor Rasa:", error);
       addMessage("Ocorreu um erro. Tente novamente mais tarde.", "bot");
-      setIsTyping(false)
+      setIsTyping(false);
     }
   };
 
